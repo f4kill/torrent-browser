@@ -1,0 +1,160 @@
+body {
+	font-family: Open sans, Helvetica, sans-serif;
+	font-weight: lighter;
+	font-size: 12px;
+	background-color: #4B565A;
+}
+
+.library-container {
+	display: flex;
+	position: relative;
+
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.media-card {
+	min-width: 0;
+	flex: 0 0 calc(20% - 30px);
+
+	padding: 15px;
+	transition: margin-bottom .3s ease;
+}
+
+.media-card-content {
+	position: relative;
+}
+.media-poster {
+	display: block;
+
+	width: 100%;
+	height: auto;
+
+	background: white;
+}
+
+.media-card.match .media-poster {
+	opacity: .55;
+}
+
+.media-owned {
+	display: none;
+	position: absolute;
+	right: 0;
+	top: 0;
+	z-index: 1;
+
+	width: 20%;
+	height: auto;
+}
+
+.media-card.match .media-owned {
+	display: initial;
+}
+
+.media-title,
+.media-year {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	color: white;
+	font-size: 1.1em;
+	font-weight: 400;
+
+	margin: .8em 0;
+}
+
+.media-year {
+	color: #DDD;
+	margin-bottom: 0;
+}
+
+.media-card.open:not(.match) {
+	margin-bottom: 430px;
+}
+
+.media-card.open:not(.match) .media-more {
+	height: 400px;
+}
+
+.media-more {
+	position: absolute;
+	left: 15px;
+	right: 15px;
+
+	height: 0;
+	overflow: hidden;
+
+	margin-top: 15px;
+
+	color: white;
+
+	background: #111;
+
+	transition: height .3s ease;
+}
+
+.media-more-wrapper {
+	position: relative;
+	height: 400px;
+}
+
+.media-more .tabs-select {
+	border-bottom: 1px solid #888;
+}
+
+.media-more section {
+	position: absolute;
+	padding: 20px;
+}
+
+
+.segmented {
+	display: flex;
+	flex-flow: row wrap;
+
+	box-sizing: border-box;
+	text-align: center;
+}
+
+.segmented label {
+	display: block;
+	flex: 1;
+
+	margin: 0;
+	padding: .4em;
+	box-sizing: border-box;
+
+	border: 1px solid #167efb;
+	border-right: none;
+
+	color: #167efb;
+
+	cursor:  pointer;
+
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.segmented label.checked {
+	background: #167efb;
+	color: #fff;
+}
+
+.segmented label:first-child {
+	border-radius: .4em 0 0 .4em;
+	border-right: 0;
+}
+
+.segmented label:last-child {
+	border-radius: 0 .4em .4em 0;
+	border-right: 1px solid;
+}
+
+.segmented input[type="radio"] {
+	appearance: none;
+	-webkit-appearance: none;
+	margin: 0;
+	position: absolute;
+}
