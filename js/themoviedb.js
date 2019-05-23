@@ -157,12 +157,31 @@ class MovieAPI {
 	}
 
 	setupListeners() {
+		let obj = this;
+
 		$(document).on('click', '.media-card-content', function() {
-			let isClosed = !$(this).closest('.media-card').hasClass('open');
-			$('.media-card').removeClass('open');
+			let $mediaCard = $(this).closest('.media-card');
+			let isClosed = !$mediaCard.hasClass('open');
+
+			$('.media-card').removeClass('open'); // close all
+
 			if(isClosed) {
-				$(this).closest('.media-card').addClass('open');
+				$mediaCard.addClass('open loading');
+
+				let title = $mediaCard.find('.media-title').text();
+
+				obj.ygg.searchTorrent(title, Ygg.SUB_CATEGORIES.VIDEO.FILM, results => {
+					$mediaCard.find('.torrent-results').html(obj.buildTable(results));
+				});
 			}
 		});
+	}
+
+	buildTable(array) {
+		let html;
+		array.forEach((el) => {
+			html += `<tr><td><a href="${el.link}">${el.name}</a></td></tr>`;
+		});
+		return html;
 	}
 }

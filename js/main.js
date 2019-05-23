@@ -1,6 +1,7 @@
 $(document).ready(function() {
+	let ygg = new Ygg();
 	let plex = new Plex(plexUrl, '32400', plexApiKey);
-	let themoviedb = new MovieAPI(themoviedbApiKey, plex);
+	let themoviedb = new MovieAPI(themoviedbApiKey, plex, ygg);
 
 
 	/*$('#target').load(

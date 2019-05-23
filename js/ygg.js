@@ -1,26 +1,30 @@
 class Ygg {
 
-	static ACTIONS = {
-		SEARCH: 'search'
+	static get ACTIONS () {
+		return { SEARCH: 'search' };
 	}
 
-	static CATEGORIES = {
-		ALL: 'all',
-		VIDEO: 2145,
-		GAMES: 2142,
-		APPS: 2144
+	static get CATEGORIES () {
+		return {
+			ALL: 'all',
+			VIDEO: 2145,
+			GAMES: 2142,
+			APPS: 2144
+		};
 	}
-	static SUB_CATEGORIES = {
-		VIDEO : {              
-			ANIMATION: 2178,
-			ANIMATION_SERIES: 2179,
-			CONCERT: 2180,
-			DOCUMENTARY: 2181,
-			TV_SHOW: 2182,
-			FILM: 2183,
-			TV_SERIES: 2184,
-			SHOW: 2185,
-			SPORT: 2186
+	static get SUB_CATEGORIES () {
+		return {
+			VIDEO : {              
+				ANIMATION: 2178,
+				ANIMATION_SERIES: 2179,
+				CONCERT: 2180,
+				DOCUMENTARY: 2181,
+				TV_SHOW: 2182,
+				FILM: 2183,
+				TV_SERIES: 2184,
+				SHOW: 2185,
+				SPORT: 2186
+			}
 		}
 	}
 
@@ -33,12 +37,12 @@ class Ygg {
 			//JSONP API
 			url : '/proxy.php',
 			data: {
-				csurl: 'https://www.ygg.to'
+				csurl: 'https://ygg.to'
 			},
 			dataType: 'html',
 			//work with the response
 			success: function(answer) {
-				console.log(arguments);
+				// console.log(arguments);
 			},
 			error: function() {
 				console.log(arguments);
@@ -46,28 +50,37 @@ class Ygg {
 		});
 	}
 
-	searchTorrent(query, sub_category) {
+	searchTorrent(query, sub_category, callback) {
+		query = encodeURIComponent(query);
+		query = query.replaceAll('%20', '+');
+		console.log(query);
 		$.ajax({
 			//JSONP API
 			url : '/proxy.php',
+			method: 'POST',
 			data: {
-				csurl: 'https://www2.yggtorrent.ch/engine/search',
-				do: this.SEARCH,
-				category: this.CATEGORIES.VIDEO,
-				sub_category: sub_category,
-				order: 'desc',
-				sort: 'completed'
-			},
+				csurl: `http://www2.yggtorrent.ch/engine/search?name=${query}&do=${Ygg.SEARCH}`
+			}, //  `http://www2.yggtorrent.ch/engine/search?name=${query}&do=${Ygg.SEARCH}&category=${Ygg.CATEGORIES.VIDEO}&order=desc&sort=completed$sub_category=${sub_category}`
 			dataType: 'html',
 			//work with the response
 			success: function(answer) {
+				console.log(this.url);
 				let $answer = $('<div></div>');
 				$answer.html(answer);
 
-				let results = $answer.find('[id="#torrents"] .results tbody tr');
+				let container = $answer.find('*[id="#torrents"]');
+				if(container.length > 0) {
+					let results =  container.find('tr');
+					let array = [];
 
-				results.each((i, row) => )
-				console.log(this.parseRow(el.find('[id="#torrents"] .results tbody tr').first()));
+					results.each((i, row) => {
+						array[i] = this.parseRow($(row));
+					});
+
+					callback(array);
+				} else {
+					callback([{name:'error'}]);
+				}
 			},
 			error: function() {
 				console.log(arguments);
@@ -86,7 +99,7 @@ class Ygg {
 
 		let obj = {
 			name: name,
-			page: link.attr('href')
+			link: link.attr('href')
 		};
 
 		return obj;
@@ -96,6 +109,11 @@ class Ygg {
 
 	}
 }
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
 
 /*var database = (function () {
     var database = null;
