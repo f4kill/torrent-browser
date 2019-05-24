@@ -51,24 +51,29 @@ class Ygg {
 	}
 
 	searchTorrent(query, sub_category, callback) {
-		query = encodeURIComponent(query);
-		query = query.replaceAll('%20', '+');
-		console.log(query);
+
 		$.ajax({
 			//JSONP API
 			url : '/proxy.php',
-			method: 'POST',
 			data: {
-				csurl: `http://www2.yggtorrent.ch/engine/search?name=${query}&do=${Ygg.SEARCH}`
+				name: query,
+				do: Ygg.ACTIONS.SEARCH,
+				category: Ygg.CATEGORIES.VIDEO,
+				sub_category: sub_category,
+				sort: 'completed',
+				order: 'desc'
 			}, //  `http://www2.yggtorrent.ch/engine/search?name=${query}&do=${Ygg.SEARCH}&category=${Ygg.CATEGORIES.VIDEO}&order=desc&sort=completed$sub_category=${sub_category}`
 			dataType: 'html',
+			beforeSend: function(request) {
+				request.setRequestHeader("X-Proxy-URL", 'https://www2.yggtorrent.ch/engine/search');
+			},
 			//work with the response
-			success: function(answer) {
-				console.log(this.url);
+			success: answer => {
 				let $answer = $('<div></div>');
 				$answer.html(answer);
 
-				let container = $answer.find('*[id="#torrents"]');
+				let container = $answer.find('[id="#torrents"]');
+				console.log($answer.find('form').serialize());
 				if(container.length > 0) {
 					let results =  container.find('tr');
 					let array = [];
