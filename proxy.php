@@ -50,6 +50,7 @@ $valid_requests = array(
 $curl_options = array(
     // CURLOPT_SSL_VERIFYPEER => false,
     // CURLOPT_SSL_VERIFYHOST => 2,
+    CURLOPT_COOKIESESSION => true
 );
 /* * * STOP EDITING HERE UNLESS YOU KNOW WHAT YOU ARE DOING * * */
 // identify request headers
@@ -125,50 +126,79 @@ if (CSAJAX_FILTERS) {
 if ($request_method == 'GET' && count($request_params) > 0 && (!array_key_exists('query', $p_request_url) || empty($p_request_url['query']))) {
     $request_url .= '?' . http_build_query($request_params);
 }
-// let the request begin
-$ch = curl_init($request_url);
-// Suppress Expect header
-if (CSAJAX_SUPPRESS_EXPECT) {
-    array_push($request_headers, 'Expect:'); 
+
+// cache request
+$url_hash = hash('md5', $url);
+$cache_file = "cache/".$url_hash.".html"; // Create a unique name for the cache file using a quick md5 hash.
+$headers_file = "cache/".$url_hash.".headers"; // Headers
+
+// If the file exists and was cached in the last 24 hours...
+if (file_exists($cache_file) && (filemtime($cache_file) > (time() - 86400 ))) { // 86,400 seconds = 24 hours.
+
+	$response_content = file_get_contents($cache_file); // Get the file from the cache.
+	$response_headers = unserialize(file_get_contents($headers_file));
+
+	sendHeaders($response_headers);
+	print($response_content); // echo the file out to the browser.
 }
-curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);   // (re-)send headers
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // return response
-curl_setopt($ch, CURLOPT_HEADER, true);       // enabled response headers
-// add data for POST, PUT or DELETE requests
-if ('POST' == $request_method) {
-    $post_data = is_array($request_params) ? http_build_query($request_params) : $request_params;
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS,  $post_data);
-} elseif ('PUT' == $request_method || 'DELETE' == $request_method) {
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request_method);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
+
+else {
+	// let the request begin
+	$ch = curl_init($request_url);
+	// Suppress Expect header
+	if (CSAJAX_SUPPRESS_EXPECT) {
+	    array_push($request_headers, 'Expect:'); 
+	}
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);   // (re-)send headers
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // return response
+	curl_setopt($ch, CURLOPT_HEADER, true);       // enabled response headers
+	// add data for POST, PUT or DELETE requests
+	if ('POST' == $request_method) {
+	    $post_data = is_array($request_params) ? http_build_query($request_params) : $request_params;
+	    curl_setopt($ch, CURLOPT_POST, true);
+	    curl_setopt($ch, CURLOPT_POSTFIELDS,  $post_data);
+	} elseif ('PUT' == $request_method || 'DELETE' == $request_method) {
+	    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $request_method);
+	    curl_setopt($ch, CURLOPT_POSTFIELDS, $request_params);
+	}
+	// Set multiple options for curl according to configuration
+	if (is_array($curl_options) && 0 <= count($curl_options)) {
+	    curl_setopt_array($ch, $curl_options);
+	}
+	// retrieve response (headers and content)
+	$response = curl_exec($ch);
+	curl_close($ch);
+	// split response to header and content
+	list($response_headers, $response_content) = preg_split('/(\r\n){2}/', $response, 2);
+	file_put_contents($cache_file, $response_content, LOCK_EX);
+
+	// (re-)send the headers
+	$response_headers = preg_split('/(\r\n){1}/', $response_headers);
+
+	// cache the headers
+	file_put_contents($headers_file, serialize($response_headers), LOCK_EX);
+
+	sendHeaders($response_headers);
+
+	// finally, output the content
+	print($response_content);
 }
-// Set multiple options for curl according to configuration
-if (is_array($curl_options) && 0 <= count($curl_options)) {
-    curl_setopt_array($ch, $curl_options);
-}
-// retrieve response (headers and content)
-$response = curl_exec($ch);
-curl_close($ch);
-// split response to header and content
-list($response_headers, $response_content) = preg_split('/(\r\n){2}/', $response, 2);
-// (re-)send the headers
-$response_headers = preg_split('/(\r\n){1}/', $response_headers);
-foreach ($response_headers as $key => $response_header) {
-    // Rewrite the `Location` header, so clients will also use the proxy for redirects.
-    if (preg_match('/^Location:/', $response_header)) {
-        list($header, $value) = preg_split('/: /', $response_header, 2);
-        $response_header = 'Location: ' . $_SERVER['REQUEST_URI'] . '?csurl=' . $value;
-    }
-    if (!preg_match('/^(Transfer-Encoding):/', $response_header)) {
-        header($response_header, false);
-    }
-}
-// finally, output the content
-print($response_content);
 function csajax_debug_message($message)
 {
     if (true == CSAJAX_DEBUG) {
         print $message . PHP_EOL;
     }
+}
+
+function sendHeaders($response_headers) {
+	foreach ($response_headers as $key => $response_header) {
+	    // Rewrite the `Location` header, so clients will also use the proxy for redirects.
+	    if (preg_match('/^Location:/', $response_header)) {
+	        list($header, $value) = preg_split('/: /', $response_header, 2);
+	        $response_header = 'Location: ' . $_SERVER['REQUEST_URI'] . '?csurl=' . $value;
+	    }
+	    if (!preg_match('/^(Transfer-Encoding):/', $response_header)) {
+	        header($response_header, false);
+	    }
+	}
 }
