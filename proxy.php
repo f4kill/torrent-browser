@@ -128,7 +128,7 @@ if ($request_method == 'GET' && count($request_params) > 0 && (!array_key_exists
 }
 
 // cache request
-$url_hash = hash('md5', $url);
+$url_hash = hash('md5', $request_url);
 $cache_file = "cache/".$url_hash.".html"; // Create a unique name for the cache file using a quick md5 hash.
 $headers_file = "cache/".$url_hash.".headers"; // Headers
 
