@@ -183,6 +183,18 @@ class MovieAPI {
 				});
 			}
 		});
+		$(document).on('click', '.download-torrent', function(e) {
+			e.preventDefault();
+
+			let currentButton = $(this);
+			
+			$.ajax('queueTorrent.php', {
+				torrentLink: currentButton.closest('tr').find('torrent-link').attr('href'),
+				success: () => {
+					currentButton.closest('.media-card').addClass('queued');
+				}
+			});
+		});
 	}
 
 	buildTable(array) {
@@ -191,6 +203,7 @@ class MovieAPI {
 			<tr>
 				<th>Torrent</th>
 				<th>Tags</th>
+				<th>Download</th>
 			</tr>
 		</thead>
 		<tbody>`;
@@ -200,7 +213,7 @@ class MovieAPI {
 			item.tags.forEach(tag => {
 				chips += `<span class="chip">${tag}</span>`;
 			});
-			html += `<tr>\n<td><a href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n</tr>\n`;
+			html += `<tr>\n<td><a class="torrent-link" href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n<td><button class="download-torrent">Télécharger</button></td></tr>\n`;
 		});
 
 		html += '</tbody>';
