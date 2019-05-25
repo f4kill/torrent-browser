@@ -106,8 +106,8 @@ class MovieAPI {
 				<aside class="media-more">
 					<div class="media-more-wrapper">
 						<div class="tabs-select segmented">
-							<label class="checked"><input type="radio" name="tabs-select" checked />Infos film</label>
-							<label><input type="radio" name="tabs-select" />Ajout torrent</label>
+							<label><input type="radio" name="tabs-select" />Infos film</label>
+							<label class="checked"><input type="radio" name="tabs-select" checked />Ajout torrent</label>
 							<label><input type="radio" name="tabs-select" />Ajout avancé</label>
 						</div>
 						<section class="film-info">
@@ -209,11 +209,11 @@ class MovieAPI {
 		<tbody>`;
 
 		array.forEach((item) => {
-			let chips;
+			let chips = "";
 			item.tags.forEach(tag => {
 				chips += `<span class="chip">${tag}</span>`;
 			});
-			html += `<tr>\n<td><a class="torrent-link" href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n<td><button class="download-torrent">Télécharger</button></td></tr>\n`;
+			html += `<tr>\n<td><a class="torrent-link" href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n<td><button class="download-torrent fas fa-plus-circle" alt="Ajouter" title="Ajouter"></button></td></tr>\n`;
 		});
 
 		html += '</tbody>';
