@@ -5,7 +5,6 @@ class Plex {
 		this.serverIp = ip;
 		this.serverPort = port;
 		this.serverToken = token;
-		this.loaded = false;
 
 		// front end
 		this.displayContainer = '.library-container';
@@ -21,7 +20,7 @@ class Plex {
 				'X-Plex-Token': this.serverToken,
 				query: query
 			},
-			beforeSend: function(request) {
+			beforeSend: request => {
 				request.setRequestHeader("X-Proxy-URL", 'https://' + this.serverIp + ':' + this.serverPort + '/search')
 			},
 			success: callback,

@@ -40,7 +40,8 @@ define('CSAJAX_DEBUG', true);
  */
 $valid_requests = array(
     'www2.yggtorrent.ch',
-    'api.themoviedb.org'
+    'api.themoviedb.org',
+    'plex.mrik.pw'
 );
 /**
  * Set extra multiple options for cURL
