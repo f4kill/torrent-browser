@@ -20,28 +20,31 @@ class MovieAPI {
 	init() {
 		this.request('/configuration', (data) => {
 			this.config = data;
-		});
 
-		this.request('/genre/movie/list', (data) => {
-			this.genres.movie = data;
-		});
+			this.request('/genre/movie/list', (data) => {
+				this.genres.movie = data;
 
-		this.request('/genre/tv/list', (data) => {
-			this.genres.tv = data;
-		});
+				this.request('/genre/tv/list', (data) => {
+					this.genres.tv = data;
 
-		this.update();
-		this.setupListeners();
+					this.update();
+					this.setupListeners();
+				});
+			});
+		});
 	}
 
 	request(action, success, data = {}) {
 		data.api_key = this.key;
 
 		$.ajax({
-			url: this.url + this.version + action,
-			method: 'GET',
+			url : '/proxy.php',
 			data: data,
 			dataType: "json",
+
+			beforeSend: request => {
+				request.setRequestHeader("X-Proxy-URL", this.url + this.version + action);
+			},
 
 			success: success,
 
@@ -63,7 +66,7 @@ class MovieAPI {
 			this.match();
 		}, {
 			sort_by: this.sort,
-			primary_release_year: 2018
+			primary_release_year: 2019
 		});
 	}
 
@@ -124,18 +127,20 @@ class MovieAPI {
 	}
 
 	match() {
-		$('.media-card').each((i, el) => {
-			let title = $(el).find('.media-title').text();
-			let year = $(el).find('.media-year').text();
+		if(this.plex.loaded != false) {
+			$('.media-card').each((i, el) => {
+				let title = $(el).find('.media-title').text();
+				let year = $(el).find('.media-year').text();
 
-			this.plex.search(title, (data) => {
-				$(data).find('Video').each((i, video) => {
-					if($(video).attr('title') == title && $(video).attr('year') == year) {
-						$(el).addClass('match');
-					}
+				this.plex.search(title, (data) => {
+					$(data).find('Video').each((i, video) => {
+						if($(video).attr('title') == title && $(video).attr('year') == year) {
+							$(el).addClass('match');
+						}
+					});
 				});
 			});
-		});
+		}
 	}
 
 	parseYear(date) {
@@ -196,5 +201,9 @@ class MovieAPI {
 		html += '</tbody>';
 
 		return html;
+	}
+
+	noResults() {
+
 	}
 }
