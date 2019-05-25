@@ -18,7 +18,7 @@
 		
 	</section>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="http://cdn.dev.local/js/jquery-3.3.1.min.js"></script>
 	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.js"></script> -->
 	<script src="js/config.js"></script>
 	<script src="js/plex.js"></script>
