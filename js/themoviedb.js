@@ -175,6 +175,8 @@ class MovieAPI {
 
 				this.ygg.searchTorrent(title, Ygg.SUB_CATEGORIES.VIDEO.FILM, results => {
 					$mediaCard.find('.torrent-results').html(this.buildTable(results));
+				}, () => {
+					$mediaCard.find('.torrent-results').html('Aucun résultat');
 				});
 			}
 		});
@@ -201,9 +203,5 @@ class MovieAPI {
 		html += '</tbody>';
 
 		return html;
-	}
-
-	noResults() {
-
 	}
 }
