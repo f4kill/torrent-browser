@@ -1,15 +1,9 @@
 class Plex {
 	constructor(ip, port, token) {
-		// back end
 		this.databasesLocation = "/plex";
 		this.serverIp = ip;
 		this.serverPort = port;
 		this.serverToken = token;
-
-		// front end
-		this.displayContainer = '.library-container';
-
-		this.setupListeners();
 	}
 
 	search(query, callback) {
@@ -31,25 +25,4 @@ class Plex {
 			}
 		});
 	}
-
-	setupListeners() {
-		$(document).on('click', 'button.load-library', () => {
-			console.log(this.database);
-		});
-
-		$(document).on('click', 'button.load-library', () => {
-
-		});
-	}
 }
-
-
-/*
-
-1 read
-2 404
-3 request from server
-4 update
-5 read
-
-*/
