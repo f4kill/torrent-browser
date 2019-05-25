@@ -33,7 +33,7 @@ class Ygg {
 		// https://www2.yggtorrent.ch/engine/search?&category=2145&sub_category=all&do=search
 		// https://www2.yggtorrent.ch/engine/search?name=&description=&file=&uploader=&category=2145&sub_category=2183&do=search
 
-		$.ajax({
+		/*$.ajax({
 			//JSONP API
 			url : '/proxy.php',
 			data: {
@@ -47,10 +47,10 @@ class Ygg {
 			error: function() {
 				console.log(arguments);
 			}
-		});
+		});*/
 	}
 
-	searchTorrent(query, sub_category, callback) {
+	searchTorrent(query, sub_category, callback, noResults) {
 		$.ajax({
 			//JSONP API
 			url : '/proxy.php',
@@ -71,13 +71,20 @@ class Ygg {
 				let $answer = $('<div></div>');
 				$answer.html(answer);
 
-				let table = $answer.find('[id="#torrents"] table');
-				if(table.length > 0) {
-					let array = this.parseTable(table);
+				let titles = $answer.find('section > h2').text();
 
-					callback(array);
-				} else {
-					console.log('error parsing ygg');
+				// check if the query returns nothing
+				if(titles.indexOf('Aucun résultat') == -1) {
+					let table = $answer.find('[id="#torrents"] table');
+					if(table.length > 0) {
+						let array = this.parseTable(table);
+
+						callback(array);
+					} else {
+						console.log('error parsing ygg', answer);
+					}
+				} else if(typeof noResults === 'function') {
+					noResults();
 				}
 			},
 			error: function() {
