@@ -5,8 +5,7 @@ class Plex {
 		this.serverIp = ip;
 		this.serverPort = port;
 		this.serverToken = token;
-
-		this.load();
+		this.loaded = false;
 
 		// front end
 		this.displayContainer = '.library-container';
@@ -14,76 +13,16 @@ class Plex {
 		this.setupListeners();
 	}
 
-	load(retryOnFail = true) {
-		this.loaded = false;
-		let url = this.databasesLocation + '/' + this.serverIp + '/db.xml';
-
-		$.ajax(url, {
-			dataType: 'xml',
-
-			//work with the response
-			success: (data) => {
-		        // xml = $.parseXML(data);
-		        this.database = data;
-			},
-			error: function() {
-				if(window.debug) {
-					console.log('plex.load error', url, arguments);
-				}
-
-				if(retryOnFail) {
-					this.update();
-				}
-			}
-		});
-	}
-
-	update() {
-		let url = 'http://' + this.serverIp + ':' + this.serverPort + '/library/sections/1/all/';
-		$.ajax(url, {
-			data: {
-				'X-Plex-Token': this.serverToken
-			},
-			dataType: 'xml',
-
-			success: (data) => {
-				this.save(data.documentElement.outerHTML);
-			},
-			error: function() {
-				if(window.debug) {
-					console.log('plex.update error', url, arguments);
-				}
-			}
-		});
-	}
-
-	save(data) {
-		let xhr = $.ajax({
-			type: 'POST',
-			url: '/plex/save.php',
-			data: {
-				write: 1,
-				data: data,
-				server: this.serverIp
-			},
-			success: () => {
-				this.load(false);
-			},
-			error: function() {
-				if(window.debug) {
-					console.log('plex.save error', arguments);
-				}
-			}
-		});
-	}
-
 	search(query, callback) {
 		$.ajax({
-			type: 'GET',
-			url: 'http://' + this.serverIp + ':' + this.serverPort + '/search',
+			dataType: 'xml',
+			url: 'proxy.php',
 			data: {
 				'X-Plex-Token': this.serverToken,
 				query: query
+			},
+			beforeSend: function(request) {
+				request.setRequestHeader("X-Proxy-URL", 'https://' + this.serverIp + ':' + this.serverPort + '/search')
 			},
 			success: callback,
 			error: function() {
@@ -98,7 +37,7 @@ class Plex {
 		$(document).on('click', 'button.load-library', () => {
 			console.log(this.database);
 		});
-		
+
 		$(document).on('click', 'button.load-library', () => {
 
 		});
@@ -106,7 +45,7 @@ class Plex {
 }
 
 
-/* 
+/*
 
 1 read
 2 404
