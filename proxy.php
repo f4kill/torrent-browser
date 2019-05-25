@@ -39,7 +39,8 @@ define('CSAJAX_DEBUG', true);
  * A set of valid cross domain requests
  */
 $valid_requests = array(
-    'www2.yggtorrent.ch'
+    'www2.yggtorrent.ch',
+    'api.themoviedb.org'
 );
 /**
  * Set extra multiple options for cURL
