@@ -38,7 +38,7 @@ class MovieAPI {
 		data.api_key = this.key;
 
 		$.ajax({
-			url : '/proxy.php',
+			url : 'proxy.php',
 			data: data,
 			dataType: "json",
 
@@ -66,7 +66,7 @@ class MovieAPI {
 			this.match();
 		}, {
 			sort_by: this.sort,
-			primary_release_year: 2019
+			primary_release_year: 2018
 		});
 	}
 
@@ -95,9 +95,12 @@ class MovieAPI {
 			<article class="media-card">
 				<section class="media-card-content">
 					<img class="media-owned" src="img/owned.svg"/>
+					<div class="media-card-infos">
+						<h1 class="media-title" title="${mlro.title}">${mlro.title}</h1>
+						<h2 class="media-year">${year}</h2>
+					</div>
+					<canvas class="media-card-shadow"></canvas>
 					<img class="media-poster" src="${imageUrl}"/>
-					<h1 class="media-title" title="${mlro.title}">${mlro.title}</h1>
-					<h2 class="media-year">${year}</h2>
 				</section>
 
 				<aside class="media-more">
