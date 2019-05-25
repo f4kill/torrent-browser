@@ -38,7 +38,7 @@ class MovieAPI {
 		data.api_key = this.key;
 
 		$.ajax({
-			url : '/proxy.php',
+			url : 'proxy.php',
 			data: data,
 			dataType: "json",
 
@@ -66,7 +66,7 @@ class MovieAPI {
 			this.match();
 		}, {
 			sort_by: this.sort,
-			primary_release_year: 2019
+			primary_release_year: 2018
 		});
 	}
 
@@ -95,9 +95,12 @@ class MovieAPI {
 			<article class="media-card">
 				<section class="media-card-content">
 					<img class="media-owned" src="img/owned.svg"/>
+					<div class="media-card-infos">
+						<h1 class="media-title" title="${mlro.title}">${mlro.title}</h1>
+						<h2 class="media-year">${year}</h2>
+					</div>
+					<canvas class="media-card-shadow"></canvas>
 					<img class="media-poster" src="${imageUrl}"/>
-					<h1 class="media-title" title="${mlro.title}">${mlro.title}</h1>
-					<h2 class="media-year">${year}</h2>
 				</section>
 
 				<aside class="media-more">
@@ -180,6 +183,18 @@ class MovieAPI {
 				});
 			}
 		});
+		$(document).on('click', '.download-torrent', function(e) {
+			e.preventDefault();
+
+			let currentButton = $(this);
+			
+			$.ajax('queueTorrent.php', {
+				torrentLink: currentButton.closest('tr').find('torrent-link').attr('href'),
+				success: () => {
+					currentButton.closest('.media-card').addClass('queued');
+				}
+			});
+		});
 	}
 
 	buildTable(array) {
@@ -188,6 +203,7 @@ class MovieAPI {
 			<tr>
 				<th>Torrent</th>
 				<th>Tags</th>
+				<th>Download</th>
 			</tr>
 		</thead>
 		<tbody>`;
@@ -197,7 +213,7 @@ class MovieAPI {
 			item.tags.forEach(tag => {
 				chips += `<span class="chip">${tag}</span>`;
 			});
-			html += `<tr>\n<td><a href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n</tr>\n`;
+			html += `<tr>\n<td><a class="torrent-link" href="${item.link}">${item.name}</a></td>\n<td>${chips}</td>\n<td><button class="download-torrent">Télécharger</button></td></tr>\n`;
 		});
 
 		html += '</tbody>';

@@ -36,22 +36,41 @@ td, th {
 
 .media-card {
 	min-width: 0;
-	flex: 0 0 calc(20% - 30px);
+	flex: 0 0 calc(20% - 50px);
 
-	padding: 15px;
+	padding: 25px;
 	transition: margin-bottom .3s ease;
 }
 
 .media-card-content {
 	position: relative;
 }
+
 .media-poster {
 	display: block;
 
 	width: 100%;
 	height: auto;
 
+	border-radius: 10px;
+
 	background: white;
+}
+
+.media-card-shadow {
+	position: absolute;
+	top: 5px;
+	left: 50%;
+	z-index: -1;
+
+	transform: translateX(-50%);
+
+	width: calc(100% +10px);
+	height: calc(100% +10px);
+
+	object-fit: cover;
+
+	filter: blur(10px);
 }
 
 .media-card.match .media-poster {
@@ -71,6 +90,11 @@ td, th {
 
 .media-card.match .media-owned {
 	display: initial;
+}
+
+.media-card-info {
+	position: absolute;
+	left: 0; bottom: 0; right: 0;
 }
 
 .media-title,
@@ -135,22 +159,19 @@ td, th {
 	display: flex;
 	flex-flow: row wrap;
 
+	justify-content: space-around;
+
 	box-sizing: border-box;
 	text-align: center;
 }
 
 .segmented label {
 	display: block;
-	flex: 1;
+	flex: 0 0 auto;
 
-	margin: 0;
-	padding: .4em;
+	margin: 0 .4em;
+	padding: .4em 0;
 	box-sizing: border-box;
-
-	border: 1px solid #167efb;
-	border-right: none;
-
-	color: #167efb;
 
 	cursor:  pointer;
 
@@ -159,18 +180,7 @@ td, th {
 }
 
 .segmented label.checked {
-	background: #167efb;
-	color: #fff;
-}
-
-.segmented label:first-child {
-	border-radius: .4em 0 0 .4em;
-	border-right: 0;
-}
-
-.segmented label:last-child {
-	border-radius: 0 .4em .4em 0;
-	border-right: 1px solid;
+	border-bottom: 2px solid #167efb;
 }
 
 .segmented input[type="radio"] {
