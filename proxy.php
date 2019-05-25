@@ -131,6 +131,7 @@ if ($request_method == 'GET' && count($request_params) > 0 && (!array_key_exists
 $url_hash = hash('md5', $request_url);
 $cache_file = "cache/".$url_hash.".html"; // Create a unique name for the cache file using a quick md5 hash.
 $headers_file = "cache/".$url_hash.".headers"; // Headers
+header('X-Requested-Url: ' . $request_url);
 
 // If the file exists and was cached in the last 24 hours...
 if (file_exists($cache_file) && (filemtime($cache_file) > (time() - 86400 ))) { // 86,400 seconds = 24 hours.
@@ -138,6 +139,7 @@ if (file_exists($cache_file) && (filemtime($cache_file) > (time() - 86400 ))) { 
 	$response_content = file_get_contents($cache_file); // Get the file from the cache.
 	$response_headers = unserialize(file_get_contents($headers_file));
 
+	header('X-Cache: HIT from ' . $_SERVER['HTTP_HOST'] . ':' . $_SERVER['REMOTE_PORT']);
 	sendHeaders($response_headers);
 	print($response_content); // echo the file out to the browser.
 }
@@ -178,6 +180,7 @@ else {
 	// cache the headers
 	file_put_contents($headers_file, serialize($response_headers), LOCK_EX);
 
+	header('X-Cache: MISS from ' . $_SERVER['HTTP_HOST'] . ':' . $_SERVER['REMOTE_PORT']);
 	sendHeaders($response_headers);
 
 	// finally, output the content
