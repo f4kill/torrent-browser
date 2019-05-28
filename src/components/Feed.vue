@@ -1,6 +1,6 @@
 <template>
-	<div class="feed">
-		<article v-for="media in medias" class="media-card">
+	<div v-if="medias" class="feed">
+		<article v-for="media in medias" :key="media.id" class="media-card">
 			<section class="content">
 				<img class="owned" src="img/owned.svg"/>
 				<div class="infos">
@@ -14,9 +14,9 @@
 			<aside class="more">
 				<div class="more-wrapper">
 					<div class="tabs-select segmented">
-						<button>>Infos film</button>
+						<button>Infos film</button>
 						<button class="checked">Ajout torrent</button>
-						<button>>Ajout avancé</button>
+						<button>Ajout avancé</button>
 					</div>
 					<section class="film-info">
 					</section>
@@ -35,45 +35,24 @@
 			</aside>
 		</article>
 	</div>
+
+	<div v-else>
+		Loading...
+	</div>
 </template>
 
 <script>
-import axios from 'axios';
-import tMDB from '@/components/mixins/tMDB';
-
 export default {
 	name: 'Feed',
 
-	data() {
-		return {
-			medias: [],
-		};
-	},
-
-	mounted() {
-		console.log('mounted');
-		this.fetchData();
-	},
-
-	watch: {
-		// refresh on route change
-		$route: 'fetchData',
-	},
-
-	mixins: [tMDB],
-
-	methods: {
-		fetchData() {
-			const rq = this.request(`/${this.method}/${this.media}`);
-			console.log(rq);
-
-			axios(rq, {
-				sort_by: this.sort,
-				primary_release_year: 2018,
-			}).then((data) => {
-				this.medias = data;
-			});
+	computed: {
+		medias() {
+			return this.$store.state.medias;
 		},
+	},
+
+	created() {
+		this.$store.dispatch('refresh');
 	},
 };
 </script>

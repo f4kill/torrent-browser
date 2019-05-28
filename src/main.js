@@ -4,10 +4,52 @@ import axios from 'axios';
 import App from './App.vue';
 import router from './router';
 
+// store helpers
+function request(store, action, data = {}) {
+	data.api_key = store.state.tMDB.key;
+
+	return {
+		url: 'http://tbapi.dev.local:80/proxy.php',
+
+		data,
+		dataType: 'json',
+
+		method: 'get',
+		headers: {
+			'X-Proxy-URL': store.state.tMDB.url + store.state.tMDB.version + action,
+		},
+
+		error(...args) {
+			if (window.debug) {
+				console.log(`${action} error`, args);
+			}
+		},
+	};
+}
+
+function tMDBImageUrl(store, path, size = 'w500') {
+	// make sure https media is configured
+	if (typeof store.state.tMDB.config.images.secure_base_url === 'undefined') {
+		return store.state.tMDB.config.images.base_url + size + path;
+	}
+
+	// if no config is set you're fucked anyway
+	return store.state.tMDB.config.images.secure_base_url + size + path;
+}
+
+function parseYear(store, date) {
+	const match = date.match(/(\d){4}/);
+	if (match.length > 0) {
+		return match[0];
+	}
+	return ''; // failed
+}
+
+Vue.use(Vuex);
+
 const store = new Vuex.Store({
-	async fetch({ store }) {
-		// base api config
-		const tMDB = {
+	state: {
+		tMDB: {
 			key: '59dadcc24f4a0f0f5c863344dd30f309',
 			url: 'https://api.themoviedb.com/',
 			version: 3,
@@ -17,78 +59,50 @@ const store = new Vuex.Store({
 			method: 'discover',
 			media: 'movie',
 			sort: 'popularity.desc',
-		};
-
-
-		const config = await axios.get(this.request('/configuration'));
-
-		const [movieGenres, tvGenres] = await Promise.all([
-			axios.get(this.request('/genre/movie/list')),
-			axios.get(this.request('/genre/tv/list')),
-		]);
-
-		// Update state once with all 3 responses
-		tMDB.config = config.data;
-		tMDB.genres = {
-			movie: movieGenres.data,
-			tv: tvGenres.data,
-		};
-
-		store.commit('tMDB', tMDB);
-
-		const media = await axios(this.request(`/${this.method}/${this.media}`), {
-			sort_by: this.sort,
-			primary_release_year: 2018,
-		});
-
-		store.commit('media', media);
+		},
 	},
 
 	mutations: {
-		tMDB(state, data) {
-			state.tMDB = data;
+		config(state, data) {
+			state.tMDB.config = data;
+		},
+		genres(state, data) {
+			state.tMDB.genres = data;
+		},
+		medias(state, data) {
+			state.medias = data;
 		},
 	},
 
-	methods: {
-		request(action, data = {}) {
-			data.api_key = this.key;
+	actions: {
+		async init({ storeInstance }) {
+			console.log('fetch');
 
-			return {
-				url: 'http://tbapi.dev.local/proxy.php',
+			const config = await axios.get(request(store, '/configuration'));
 
-				data,
-				dataType: 'json',
+			const [movieGenres, tvGenres] = await Promise.all([
+				axios.get(request(store, '/genre/movie/list')),
+				axios.get(request(store, '/genre/tv/list')),
+			]);
 
-				method: 'get',
-				headers: {
-					'X-Proxy-URL': this.url + this.version + action,
-				},
+			console.log('config ok');
 
-				error(...args) {
-					if (window.debug) {
-						console.log(`${action} error`, args);
-					}
-				},
-			};
+			// Update state once with all 3 responses
+			storeInstance.commit('config', config);
+			storeInstance.commit('genres', {
+				movie: movieGenres.data,
+				tv: tvGenres.data,
+			});
 		},
 
-		tMDBImageUrl(path, size = 'w500') {
-			// make sure https media is configured
-			if (typeof this.config.images.secure_base_url === 'undefined') {
-				return this.config.images.base_url + size + path;
-			}
+		async refresh({ commit }) {
+			console.log('refresh');
+			const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`), {
+				sort_by: this.state.tMDB.sort,
+				primary_release_year: 2018,
+			});
 
-			// if no config is set you're fucked anyway
-			return this.config.images.secure_base_url + size + path;
-		},
-
-		parseYear(date) {
-			const match = date.match(/(\d){4}/);
-			if (match.length > 0) {
-				return match[0];
-			}
-			return ''; // failed
+			commit('medias', medias);
 		},
 	},
 });
@@ -100,7 +114,7 @@ new Vue({
 	store,
 	render: h => h(App),
 
-	computed() {
-
+	created() {
+		this.$store.dispatch('init');
 	},
 }).$mount('#app');
