@@ -197,6 +197,10 @@ function csajax_debug_message($message)
 
 function sendHeaders($response_headers) {
 	foreach ($response_headers as $key => $response_header) {
+		// prevent double cors
+	    if(!(strpos($response_header, 'Access-Control') === false && strpos($response_header, 'Cache-Control') === false)) {
+	    	continue;
+	    }
 	    // Rewrite the `Location` header, so clients will also use the proxy for redirects.
 	    if (preg_match('/^Location:/', $response_header)) {
 	        list($header, $value) = preg_split('/: /', $response_header, 2);
