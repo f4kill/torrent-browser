@@ -5,10 +5,10 @@
 				<img class="owned" src="img/owned.svg"/>
 				<div class="infos">
 					<h1 class="title" :title="media.title">{{ media.title }}</h1>
-					<h2 class="release-year">{{ this.parseYear(media.release_date) }}</h2>
+					<h2 class="release-year">{{ media.release_year }}</h2>
 				</div>
 				<canvas class="shadow"></canvas>
-				<img class="poster" :src="poster || '@/assets/poster.png'"/>
+				<img class="poster" :src="media.poster_url || '@/assets/poster.png'"/>
 			</section>
 
 			<aside class="more">
@@ -42,17 +42,23 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
 	name: 'Feed',
 
-	computed: {
-		medias() {
-			return this.$store.state.medias;
-		},
-	},
+	computed: mapState([
+		'medias',
+	]),
 
 	created() {
 		this.$store.dispatch('refresh');
+
+		this.$store.subscribe((mutation) => {
+			if (['config', 'genres'].indexOf(mutation.type) + 1) {
+				this.$store.dispatch('refresh');
+			}
+		});
 	},
 };
 </script>

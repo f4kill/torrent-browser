@@ -5,13 +5,13 @@ import App from './App.vue';
 import router from './router';
 
 // store helpers
-function request(store, action, data = {}) {
-	data.api_key = store.state.tMDB.key;
+function request(store, action, params = {}) {
+	params.api_key = store.state.tMDB.key;
 
 	return {
 		url: 'http://tbapi.dev.local:80/proxy.php',
 
-		data,
+		params,
 		dataType: 'json',
 
 		method: 'get',
@@ -51,7 +51,7 @@ const store = new Vuex.Store({
 	state: {
 		tMDB: {
 			key: '59dadcc24f4a0f0f5c863344dd30f309',
-			url: 'https://api.themoviedb.com/',
+			url: 'https://api.themoviedb.org/',
 			version: 3,
 
 			genres: {},
@@ -75,34 +75,34 @@ const store = new Vuex.Store({
 	},
 
 	actions: {
-		async init({ storeInstance }) {
-			console.log('fetch');
-
-			const config = await axios.get(request(store, '/configuration'));
-
-			const [movieGenres, tvGenres] = await Promise.all([
-				axios.get(request(store, '/genre/movie/list')),
-				axios.get(request(store, '/genre/tv/list')),
-			]);
-
-			console.log('config ok');
+		async init({ commit }) {
+			const config = await axios.request(request(store, '/configuration'));
+			const movieGenres = await axios.request(request(store, '/genre/movie/list'));
+			const tvGenres = await axios.request(request(store, '/genre/tv/list'));
 
 			// Update state once with all 3 responses
-			storeInstance.commit('config', config);
-			storeInstance.commit('genres', {
+			commit('config', config.data);
+			commit('genres', {
 				movie: movieGenres.data,
 				tv: tvGenres.data,
 			});
 		},
 
-		async refresh({ commit }) {
-			console.log('refresh');
-			const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`), {
-				sort_by: this.state.tMDB.sort,
-				primary_release_year: 2018,
-			});
+		async refresh({ commit, state }) {
+			// these states are needed before refresh
+			if (typeof state.tMDB.config !== 'undefined' && typeof state.tMDB.genres !== 'undefined') {
+				const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`), {
+					sort_by: this.state.tMDB.sort,
+					primary_release_year: 2018,
+				});
+				console.log(medias);
+				medias.data.results.forEach((el, i) => {
+					medias.data.results[i].release_year = parseYear(store, el.release_date);
+					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
+				});
 
-			commit('medias', medias);
+				commit('medias', medias.data.results);
+			}
 		},
 	},
 });
@@ -114,7 +114,7 @@ new Vue({
 	store,
 	render: h => h(App),
 
-	created() {
+	beforeCreate() {
 		this.$store.dispatch('init');
 	},
 }).$mount('#app');
