@@ -18,12 +18,6 @@ function request(store, action, params = {}) {
 		headers: {
 			'X-Proxy-URL': store.state.tMDB.url + store.state.tMDB.version + action,
 		},
-
-		error(...args) {
-			if (window.debug) {
-				console.log(`${action} error`, args);
-			}
-		},
 	};
 }
 
@@ -96,7 +90,6 @@ const store = new Vuex.Store({
 					sort_by: this.state.tMDB.sort,
 					primary_release_year: 2018,
 				});
-				console.log(medias);
 				medias.data.results.forEach((el, i) => {
 					medias.data.results[i].release_year = parseYear(store, el.release_date);
 					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
