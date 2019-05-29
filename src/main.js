@@ -71,6 +71,7 @@ const store = new Vuex.Store({
 
 	actions: {
 		async init({ commit }) {
+			// wait for tMDB configuration
 			const config = await axios.request(request(store, '/configuration'));
 			const movieGenres = await axios.request(request(store, '/genre/movie/list'));
 			const tvGenres = await axios.request(request(store, '/genre/tv/list'));
@@ -86,10 +87,13 @@ const store = new Vuex.Store({
 		async refresh({ commit, state }) {
 			// these states are needed before refresh
 			if (typeof state.tMDB.config !== 'undefined' && typeof state.tMDB.genres !== 'undefined') {
+				// use current filters to get new data
 				const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`), {
 					sort_by: this.state.tMDB.sort,
 					primary_release_year: 2018,
 				});
+
+				// pre format data
 				medias.data.results.forEach((el, i) => {
 					medias.data.results[i].release_year = parseYear(store, el.release_date);
 					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
