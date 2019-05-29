@@ -4,6 +4,8 @@
 			v-for="media in medias"
 			:key="media.id"
 			v-bind="media"
+			v-bind:close="closeCards"
+			v-on:card-open="closeAllCards()"
 		/>
 	</div>
 
@@ -23,16 +25,35 @@ export default {
 		MediaCard,
 	},
 
+	data() {
+		return {
+			closeCards: false,
+		};
+	},
+
 	computed: mapState(['medias']),
 
 	created() {
+		// load data
 		this.$store.dispatch('refresh');
 
+		// load can be dismissed if config isn't yet loaded
+		// on config state change try to load again
 		this.$store.subscribe((mutation) => {
 			if (['config', 'genres'].indexOf(mutation.type) + 1) {
 				this.$store.dispatch('refresh');
 			}
 		});
+	},
+
+	methods: {
+		// triggered by child event 'card-open'
+		closeAllCards() {
+			// this prop is watched by MediaCard
+			// on toggleevery child will close
+			// except the one who emitted the event
+			this.closeCards = !this.closeCards;
+		},
 	},
 };
 </script>

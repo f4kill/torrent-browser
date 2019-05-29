@@ -1,5 +1,9 @@
 <template>
-	<article class="media-card" v-bind:class="{ open: isOpen }" v-on:click="toggle()">
+	<article
+		class="media-card"
+		v-bind:class="{ open: isOpen }"
+		v-on:click="toggle()"
+	>
 		<section class="content">
 			<img class="owned-icon" src="@/assets/owned.svg"/>
 			<div class="infos">
@@ -11,7 +15,7 @@
 		</section>
 
 		<aside class="more">
-			<div class="more-wrapper">
+			<div v-if="false" class="more-wrapper">
 				<div class="tabs-select segmented">
 					<button>Infos film</button>
 					<button class="checked">Ajout torrent</button>
@@ -31,6 +35,10 @@
 				</section>
 				<section class="advanced-results"></section>
 			</div>
+
+			<div v-else>
+				<p>Loading...</p>
+			</div>
 		</aside>
 	</article>
 </template>
@@ -49,25 +57,42 @@ export default {
 			default: '...',
 		},
 		poster_url: String,
+		close: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	data() {
 		return {
 			isOpen: false,
+			willOpen: false,
 		};
 	},
 
 	methods: {
-		open() {
-			this.isOpen = true;
-		},
-
-		close() {
-			this.isOpen = false;
-		},
-
 		toggle() {
-			this.isOpen = !this.isOpen;
+			if (!this.isOpen) {
+				this.willOpen = true;
+				this.$emit('card-open');
+			} else {
+				this.isOpen = false;
+			}
+		},
+	},
+
+	watch: {
+		// the close is toggled when parent receives 'card-open' event
+		close() {
+			// is this the child who emitted 'card-open'
+			if (this.willOpen) {
+				// then we must open
+				this.isOpen = true;
+				this.willOpen = false;
+			} else {
+				// others must close
+				this.isOpen = false;
+			}
 		},
 	},
 };
@@ -151,8 +176,8 @@ export default {
 		transition: opacity .3s ease;
 	}
 
-	&:hover:not(.owned) .media-card-infos,
-	&.open:not(.owned) .media-card-infos {
+	&:hover:not(.owned) .infos,
+	&.open:not(.owned) .infos {
 		opacity: 1;
 	}
 
@@ -182,7 +207,7 @@ export default {
 		margin-bottom: 430px;
 	}
 
-	&.open:not(.match) .media-more {
+	&.open:not(.match) .more {
 		height: 400px;
 	}
 
