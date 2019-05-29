@@ -60,6 +60,7 @@ const store = new Vuex.Store({
 			media: 'movie',
 			sort: 'popularity.desc',
 		},
+		medias: [],
 	},
 
 	mutations: {
