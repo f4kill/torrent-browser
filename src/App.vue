@@ -26,4 +26,21 @@
     }
   }
 }
+
+body {
+	font-family: Open sans, Helvetica, sans-serif;
+	font-weight: 300;
+	font-size: 12px;
+	background-color: #E9ECED;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+td, th {
+	font-size: 14px;
+	padding: 10px;
+}
 </style>
