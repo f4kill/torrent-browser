@@ -3,7 +3,7 @@ dist/*
 js/config.js
 
 # Vue
-node_modules/
+/node_modules
 /dist
 
 # local env files
