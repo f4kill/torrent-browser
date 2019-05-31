@@ -14,7 +14,7 @@
 			<img class="poster" :src="poster_url || '@/assets/poster.png'"/>
 		</section>
 
-		<aside class="more">
+		<aside v-on:click.stop class="more">
 			<div class="more-wrapper">
 				<div class="tabs-select segmented">
 					<button>Infos film</button>
@@ -226,35 +226,6 @@ export default {
 		section {
 			position: absolute;
 			width: 100%;
-		}
-
-		table {
-			width: 100%;
-		}
-
-		.classic-results td:nth-child(3) {
-			text-align: right;
-		}
-
-		td:first-child,
-		th:first-child {
-			padding-left: 0;
-		}
-
-		td:last-child,
-		th:last-child {
-			padding-right: 0;
-		}
-
-		.download-torrent {
-			font-size: 16px;
-
-			margin: 0;
-			padding: 0;
-			border: none;
-
-			background: none;
-			cursor: pointer;
 		}
 	}
 }
