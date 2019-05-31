@@ -12,7 +12,9 @@
 				<td>
 					<a class="torrent-link" :href="torrent.link">{{ torrent.name }}</a>
 				</td>
-				<td v-for="tag in torrent.tags" v-bind:key="tag">{{ tag }}</td>
+				<td>
+					<span v-for="tag in torrent.tags" v-bind:key="tag" class="chip">{{ tag }}</span>
+				</td>
 				<td>
 					<button class="download-torrent fas fa-plus-circle" alt="Ajouter" title="Ajouter">
 						<font-awesome-icon icon="plus-circle" />
@@ -226,6 +228,21 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+
+table {
+	width: 100%;
+}
+
+.chip {
+	margin: 5px;
+	padding: 5px 10px;
+	border-radius: 22px;
+
+	line-height: 1em;
+	font-size: 12px;
+	background-color: lightgrey;
+	color: #3D3D3D;
+}
 
 .classic-results {
 
