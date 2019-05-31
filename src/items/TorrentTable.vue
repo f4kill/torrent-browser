@@ -4,6 +4,7 @@
 			<tr>
 				<th>Nom</th>
 				<th>Tags</th>
+				<th>Taille</th>
 				<th>Popularité</th>
 				<th>Contrôles</th>
 			</tr>
@@ -15,6 +16,8 @@
 				<td>
 					<span v-for="tag in torrent.tags" v-bind:key="tag" class="chip">{{ tag }}</span>
 				</td>
+				<td>{{ torrent.size }}</td>
+				<td>{{ popularity(torrent.completed, torrent.leech, torrent.seed) }} 🤘</td>
 				<td>
 					<button class="download-torrent fas fa-plus-circle" alt="Ajouter" title="Ajouter">
 						<font-awesome-icon icon="plus-circle" />
@@ -115,11 +118,11 @@ function parseRow(rowObj) {
 		name: data.name,
 		rawName,
 		link: $torrentLink.attr('href'),
-		age: rowObj.Age.innerHtml,
-		size: rowObj.Taille.innerHtml,
-		completed: parseInt(rowObj['Compl.'].innerHtml, 10),
-		seed: parseInt(rowObj.Seed.innerHtml, 10),
-		leech: parseInt(rowObj.Leech.innerHtml, 10),
+		age: rowObj.Age.innerHTML,
+		size: rowObj.Taille.innerHTML,
+		completed: parseInt(rowObj['Compl.'].innerHTML, 10),
+		seed: parseInt(rowObj.Seed.innerHTML, 10),
+		leech: parseInt(rowObj.Leech.innerHTML, 10),
 		tags: data.tags,
 		year: data.year,
 	};
@@ -209,8 +212,8 @@ export default {
 					params: {
 						do: 'search',
 						name: this.title,
-						// sort: 'completed',
-						// order: 'desc',
+						sort: 'completed',
+						order: 'desc',
 					},
 					dataType: 'html',
 					headers: {
@@ -221,6 +224,10 @@ export default {
 
 				this.torrentList = parseYggSearch(ygg.data);
 			}
+		},
+
+		popularity(completed, leech, seed) {
+			return completed + leech + seed;
 		},
 	},
 };
