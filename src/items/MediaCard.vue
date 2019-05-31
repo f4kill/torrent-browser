@@ -15,7 +15,7 @@
 		</section>
 
 		<aside class="more">
-			<div v-if="false" class="more-wrapper">
+			<div class="more-wrapper">
 				<div class="tabs-select segmented">
 					<button>Infos film</button>
 					<button class="checked">Ajout torrent</button>
@@ -23,29 +23,27 @@
 				</div>
 				<section class="film-info">
 				</section>
-				<section class="classic-results">
-					<table class="torrent-results">
-						<tr>
-							<th>Nom</th>
-							<th>Tags</th>
-							<th>Popularité</th>
-							<th>Contrôles</th>
-						</tr>
-					</table>
-				</section>
-				<section class="advanced-results"></section>
-			</div>
 
-			<div v-else>
-				<p>Loading...</p>
+				<TorrentTable
+					v-if="isOpen"
+					v-bind:title="title"
+				/>
+
+				<section class="advanced-results"></section>
 			</div>
 		</aside>
 	</article>
 </template>
 
 <script>
+import TorrentTable from '@/items/TorrentTable.vue';
+
 export default {
 	name: 'MediaCard',
+
+	components: {
+		TorrentTable,
+	},
 
 	props: {
 		title: {
