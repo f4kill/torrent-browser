@@ -4,8 +4,12 @@ import axios from 'axios';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import $ from 'jQuery';
 import App from './App.vue';
 import router from './router';
+import config from './config';
+
+window.$ = $;
 
 library.add(faPlusCircle);
 
@@ -48,12 +52,22 @@ function parseYear(store, date) {
 	return ''; // failed
 }
 
+async function asyncForEach(array, callback) {
+	for (let index = 0; index < array.length; index += 1) {
+		await callback(array[index], index, array);
+	}
+}
+
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
 	state: {
+		plex: {
+			url: config.plexUrl,
+			token: config.plexKey,
+		},
 		tMDB: {
-			key: '59dadcc24f4a0f0f5c863344dd30f309',
+			key: config.tMDBKey,
 			url: 'https://api.themoviedb.org/',
 			version: 3,
 
@@ -103,9 +117,32 @@ const store = new Vuex.Store({
 				});
 
 				// pre format data
-				medias.data.results.forEach((el, i) => {
+				asyncForEach(medias.data.results, async (el, i) => {
 					medias.data.results[i].release_year = parseYear(store, el.release_date);
 					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
+
+					const plex = await axios({
+						url: 'http://tbapi.dev.local/proxy.php',
+
+						params: {
+							query: el.title,
+							'X-Plex-Token': state.plex.token,
+						},
+						dataType: 'xml',
+
+						method: 'get',
+						headers: {
+							'X-Proxy-URL': `${state.plex.url}search`,
+						},
+					});
+
+					console.log(plex.data);
+					$(plex.data).find('Video').each((j, video) => {
+						console.log(video);
+						if ($(video).attr('title') === el.title && $(video).attr('year') === el.release_year) {
+							console.log('match');
+						}
+					});
 				});
 
 				commit('medias', medias.data.results);

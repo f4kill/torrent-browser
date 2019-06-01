@@ -1,6 +1,6 @@
 cache/
-dist/*
 js/config.js
+/src/config.js
 
 # Vue
 /node_modules
