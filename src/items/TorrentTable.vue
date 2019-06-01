@@ -73,21 +73,34 @@ function extractTags(name) {
 
 	const knowTags = [
 		// resolution
+		'2160p',
 		'1080p',
 		'720p',
 		'UHD',
 
+		// hdr
+		'HDR',
+		'10bits',
+
 		// language
+		'VFF',
 		'VFQ',
 		'VF2',
 		'MULTi',
+		'MULTI',
+		'Multi',
 		'TRUEFRENCH',
 		'FRENCH',
 
 		// sound
 		'DTS-HD',
+		'Atmos',
+		'TrueHD',
+		'MP3-320',
+		'MP3',
 
 		// codec
+		'x265',
 		'x264-gold',
 		'x264',
 		'HEVC',
