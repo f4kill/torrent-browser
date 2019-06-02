@@ -1,11 +1,11 @@
 <template>
 	<article
 		class="media-card"
-		v-bind:class="{ open: isOpen }"
+		v-bind:class="{ open: isOpen, owned }"
 		v-on:click="toggle()"
 	>
 		<section class="content">
-			<img class="owned-icon" src="@/assets/owned.svg"/>
+			<img v-if="owned" class="owned-icon" src="@/assets/owned.svg"/>
 			<div class="infos">
 				<h1 class="title" :title="title">{{ title }}</h1>
 				<h2 class="release-year">{{ release_year }}</h2>
@@ -51,11 +51,15 @@ export default {
 			default: 'Loading...',
 		},
 		release_year: {
-			type: String,
-			default: '...',
+			type: Number,
+			default: null,
 		},
 		poster_url: String,
 		close: {
+			type: Boolean,
+			default: false,
+		},
+		owned: {
 			type: Boolean,
 			default: false,
 		},
@@ -140,17 +144,12 @@ export default {
 	}
 
 	&.owned {
-		.media-poster {
+		.poster {
 			opacity: .55;
-		}
-
-		.owned-icon {
-			display: initial;
 		}
 	}
 
 	.owned-icon {
-		display: none;
 		position: absolute;
 		right: 0;
 		top: 0;
