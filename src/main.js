@@ -22,15 +22,12 @@ function request(store, action, params = {}) {
 	params.api_key = store.state.tMDB.key;
 
 	return {
-		url: 'http://tbapi.dev.local:80/proxy.php',
+		url: `tmdb/${store.state.tMDB.version + action}`,
 
 		params,
 		dataType: 'json',
 
 		method: 'get',
-		headers: {
-			'X-Proxy-URL': store.state.tMDB.url + store.state.tMDB.version + action,
-		},
 	};
 }
 
@@ -47,15 +44,29 @@ function tMDBImageUrl(store, path, size = 'w500') {
 function parseYear(store, date) {
 	const match = date.match(/(\d){4}/);
 	if (match.length > 0) {
-		return match[0];
+		return parseInt(match[0], 10);
 	}
 	return ''; // failed
 }
 
-async function asyncForEach(array, callback) {
-	for (let index = 0; index < array.length; index += 1) {
-		await callback(array[index], index, array);
-	}
+function plexBatchRequest(store, titles) {
+	const requestSettings = [];
+
+	titles.forEach((title) => {
+		requestSettings.push(axios.request({
+			url: '/plex/search',
+
+			params: {
+				query: title,
+				'X-Plex-Token': store.state.plex.token,
+			},
+			dataType: 'xml',
+
+			method: 'get',
+		}));
+	});
+
+	return requestSettings;
 }
 
 Vue.use(Vuex);
@@ -111,38 +122,27 @@ const store = new Vuex.Store({
 			// these states are needed before refresh
 			if (typeof state.tMDB.config !== 'undefined' && typeof state.tMDB.genres !== 'undefined') {
 				// use current filters to get new data
-				const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`), {
+				const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`, {
 					sort_by: this.state.tMDB.sort,
 					primary_release_year: 2018,
-				});
+				}));
+
+				const titles = medias.data.results.map(media => media.title);
+				const plex = await axios.all(plexBatchRequest(store, titles));
 
 				// pre format data
-				asyncForEach(medias.data.results, async (el, i) => {
+				medias.data.results.forEach((el, i) => {
 					medias.data.results[i].release_year = parseYear(store, el.release_date);
 					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
 
-					const plex = await axios({
-						url: 'http://tbapi.dev.local/proxy.php',
-
-						params: {
-							query: el.title,
-							'X-Plex-Token': state.plex.token,
-						},
-						dataType: 'xml',
-
-						method: 'get',
-						headers: {
-							'X-Proxy-URL': `${state.plex.url}search`,
-						},
-					});
-
-					console.log(plex.data);
-					$(plex.data).find('Video').each((j, video) => {
-						console.log(video);
-						if ($(video).attr('title') === el.title && $(video).attr('year') === el.release_year) {
-							console.log('match');
-						}
-					});
+					medias.data.results[i].owned = false;
+					if (typeof plex[i].data.MediaContainer.Metadata !== 'undefined') {
+						plex[i].data.MediaContainer.Metadata.forEach((media) => {
+							if (media.title === el.title && el.release_year === media.year) {
+								medias.data.results[i].owned = true;
+							}
+						});
+					}
 				});
 
 				commit('medias', medias.data.results);
