@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import axios from 'axios';
 import $ from 'jQuery';
+import config from './config';
 
 window.$ = $;
 
@@ -96,12 +97,12 @@ export default new Vuex.Store({
 	actions: {
 		async init({ commit }) {
 			// wait for tMDB configuration
-			const config = await axios.request(request(store, '/configuration'));
-			const movieGenres = await axios.request(request(store, '/genre/movie/list'));
-			const tvGenres = await axios.request(request(store, '/genre/tv/list'));
+			const tMDBConfig = await axios.request(request(this, '/configuration'));
+			const movieGenres = await axios.request(request(this, '/genre/movie/list'));
+			const tvGenres = await axios.request(request(this, '/genre/tv/list'));
 
 			// Update state once with all 3 responses
-			commit('config', config.data);
+			commit('config', tMDBConfig.data);
 			commit('genres', {
 				movie: movieGenres.data,
 				tv: tvGenres.data,
@@ -112,21 +113,27 @@ export default new Vuex.Store({
 			// these states are needed before refresh
 			if (typeof state.tMDB.config !== 'undefined' && typeof state.tMDB.genres !== 'undefined') {
 				// use current filters to get new data
-				const medias = await axios(request(store, `/${this.state.tMDB.method}/${this.state.tMDB.media}`, {
+				const medias = await axios(request(this, `/${this.state.tMDB.method}/${this.state.tMDB.media}`, {
 					sort_by: this.state.tMDB.sort,
 					primary_release_year: 2018,
 				}));
 
 				const titles = medias.data.results.map(media => media.title);
-				const plex = await axios.all(plexBatchRequest(store, titles));
+
+				const plexOnline = await axios.get(state.plex.url).then(() => true).catch(() => false);
+				let plex = false;
+
+				if (plexOnline) {
+					plex = await axios.all(plexBatchRequest(this, titles));
+				}
 
 				// pre format data
 				medias.data.results.forEach((el, i) => {
-					medias.data.results[i].release_year = parseYear(store, el.release_date);
-					medias.data.results[i].poster_url = tMDBImageUrl(store, el.poster_path);
+					medias.data.results[i].release_year = parseYear(this, el.release_date);
+					medias.data.results[i].poster_url = tMDBImageUrl(this, el.poster_path);
 
 					medias.data.results[i].owned = false;
-					if (typeof plex[i].data.MediaContainer.Metadata !== 'undefined') {
+					if (plexOnline !== false && typeof plex[i].data.MediaContainer.Metadata !== 'undefined') {
 						plex[i].data.MediaContainer.Metadata.forEach((media) => {
 							if (media.title === el.title && el.release_year === media.year) {
 								medias.data.results[i].owned = true;
