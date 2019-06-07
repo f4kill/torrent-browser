@@ -120,7 +120,7 @@ export default new Vuex.Store({
 
 				const titles = medias.data.results.map(media => media.title);
 
-				const plexOnline = await axios.get(state.plex.url).then(() => true).catch(() => false);
+				const plexOnline = await axios.get(`${state.plex.url}web/index.html`).then(() => true).catch((err, orr) => false);
 				let plex = false;
 
 				if (plexOnline) {
