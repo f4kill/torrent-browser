@@ -74,6 +74,10 @@ export default {
 
 	methods: {
 		toggle() {
+			if (this.owned) {
+				return;
+			}
+
 			if (!this.isOpen) {
 				this.willOpen = true;
 				this.$emit('card-open');
